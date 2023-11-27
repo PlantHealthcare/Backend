@@ -1,0 +1,49 @@
+#include <Arduino.h>
+#include <SoftwareSerial.h>
+#include "dht.h"
+
+#define LED_PIN 8
+#define DHT_PIN A0
+#define MOISTURE_PIN A1
+
+dht DHT;
+
+bool moistureSensorEnabled = false;
+bool temperatureSensorEnabled = false;
+bool humiditySensorEnabled = false;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  DHT.read11(DHT_PIN);
+
+  if (Serial.available() > 0) {
+    String message = Serial.readStringUntil('\n');
+
+    if (message == "1") {
+      digitalWrite(LED_PIN, HIGH);
+    } else if (message == "0") {
+      digitalWrite(LED_PIN, LOW);
+    }
+  }
+
+  int moistureValue = analogRead(MOISTURE_PIN);
+  float moisture_percentage = 100.0 - (moistureValue / 1023.0) * 100.0;
+  Serial.print("Talajnedvesség = ");
+  Serial.print(moisture_percentage); // 2 tizedesjegy
+  Serial.print(" ");
+
+  Serial.print("Páratartalom = ");
+  Serial.print(DHT.humidity); // 2 tizedesjegy
+  Serial.print(" ");
+
+  Serial.print("Hőmérséklet = ");
+  Serial.print(DHT.temperature); // 2 tizedesjegy
+  Serial.println(" ");
+
+  Serial.println();
+  delay(1000);
+}
